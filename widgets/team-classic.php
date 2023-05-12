@@ -100,6 +100,16 @@ class Elementor_WidgetCraft_Widget extends \Elementor\Widget_Base
                 ],
             ]
         );
+        $this->add_control(
+            'show_social',
+            [
+                'label' => __('Add Social Link?', 'widgetcraft'),
+                'type' => \Elementor\Controls_Manager::SWITCHER,
+                'default' => 'yes',
+                'label_on' => __('Yes', 'widgetcraft'),
+                'label_off' => __('No', 'widgetcraft'),
+            ]
+        );
 
         $this->add_control(
             'social_list',
@@ -162,8 +172,21 @@ class Elementor_WidgetCraft_Widget extends \Elementor\Widget_Base
                     ],
                 ],
                 'title_field' => '{{{ elementor.helpers.renderIcon( this, selected_icon, {}, "i", "panel" ) || "<i class=\'{{ selected_icon.value }}\' aria-hidden=\'true\'></i>" }}}',
+                'condition' => [
+                    'show_social' => 'yes', // show the repeater only when switcher is on
+                ],
             ]
         );
+
+
+        $this->add_control(
+            'show_social_value',
+            [
+                'type' => \Elementor\Controls_Manager::HIDDEN,
+                'default' => 'yes',
+            ]
+        );
+
 
         $this->end_controls_section();
     }
@@ -175,18 +198,26 @@ class Elementor_WidgetCraft_Widget extends \Elementor\Widget_Base
     protected function render()
     {
         $settings = $this->get_settings_for_display();
+
 ?>
 
         <div class="team-block">
             <div class="inner-box">
                 <ul class="social-icons">
-                    <li><a href="javascript:void(0);"><i class="fab fa-facebook-f"></i></a></li>
-                    <li><a href="javascript:void(0);"><i class="fab fa-twitter"></i></a></li>
-                    <li><a href="javascript:void(0);"><i class="fab fa-skype"></i></a></li>
-                    <li><a href="javascript:void(0);"><i class="fab fa-linkedin-in"></i></a></li>
+                    <?php if ($settings['social_list']) {
+                        foreach ($settings['social_list'] as $index => $item) { ?>
+
+                            <li>
+                                <a href="<?php echo esc_url($item['list_title']['url']); ?>" <?php echo $item['list_title']['is_external'] ? 'target="_blank"' : ''; ?> <?php echo $item['list_title']['nofollow'] ? 'rel="nofollow"' : ''; ?>>
+                                    <?php echo \Elementor\Icons_Manager::render_icon($item['selected_icon'], ['aria-hidden' => 'true']); ?>
+                                </a>
+                            </li>
+
+                    <?php }
+                    } ?>
                 </ul>
                 <div class="image">
-                    <a href="javascript:void(0);"><img src="assets/images/ourTeam/1.jpg" alt=" <?php echo $settings['name']; ?>"></a>
+                    <a href="javascript:void(0);"><img src="<?php echo $settings['profile_pic']['url']; ?>" alt=" <?php echo $settings['name']; ?>"></a>
                 </div>
                 <div class="lower-content">
                     <h3><?php echo $settings['name']; ?></h3>
@@ -194,7 +225,6 @@ class Elementor_WidgetCraft_Widget extends \Elementor\Widget_Base
                 </div>
             </div>
         </div>
-    <?php
+<?php
     }
-
 }
